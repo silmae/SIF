@@ -5,6 +5,16 @@ import numpy as np
 import os.path as osp
 
 
+FOREST = {
+    'latitude_deg': 39.126650,
+    'longitude_deg': -77.221930,
+    'elevation': 115,
+}
+"""Data for the FOREST test site for sun angle calculation as guesstimated
+from Google Earth.
+"""
+
+
 def SIF_O2A(*, L_757, L_760, E_757, E_760):
     """Compute SIF in the O2-A absorption band.
     
@@ -126,3 +136,28 @@ def _extract_date(filename):
     s = osp.splitext(filename)[0]
     return s.split('_')[1]
 
+
+def sun_positions(location_info, utc_times):
+    """Get sun positions (azimuth, altitude) given a place and set of times
+    
+    Parameters
+    ----------
+    location_info : dict-like
+        Dictionary with the keys
+            'latitude_deg',
+            'longitude_deg',
+            and 'elevation' (optional, in meters)
+    utc_times : list-like
+        List of UTC datetime objects to get sun positions for.
+    
+    Returns
+    -------
+    numpy.ndarray
+        N x 2 array of sun azimuths and altitudes in degrees.
+    """
+
+    from pysolar.solar import get_position
+
+    return np.array(
+        [get_position(**location_info, when=t) for t in utc_times]
+        )

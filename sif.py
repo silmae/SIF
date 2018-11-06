@@ -1,5 +1,9 @@
 """Tooling for computing SIF and applying corrections"""
 
+import pandas as pd
+import numpy as np
+import os.path as osp
+
 
 def SIF_O2A(*, L_757, L_760, E_757, E_760):
     """Compute SIF in the O2-A absorption band.
@@ -62,3 +66,63 @@ def FLD(*, L_in, L_out, E_in, E_out):
     
     """
     return (E_out * L_in - L_out * E_in) / (E_out - E_in)
+
+
+def cosine(n, sun):
+    """Calculate the cosine correction given a normal and sun direction.
+
+    Parameters
+    ----------
+    n : array-like
+        N x 3 array of (unit) vectors giving the surface normals.
+    sun : array-like
+        M x 3 array of (unit) vectors giving the position of the sun.
+    
+    Returns
+    -------
+    result : array-like
+        N x M Array of cosines between the given vectors
+    """
+    return np.dot(n, sun.T) / (np.sum(n, axis=1) * np.sum(sun, axis=1))
+
+
+def read_SIF_data(path, tz='US/Eastern'):
+    """Read data from a CSV file and compute the UTC timestamps
+    
+    Parameters
+    ----------
+    path : str
+        Full path to the CSV file.
+    tz : str, optional
+        Timezone of the timestamps in the file. 
+        Default is US/Eastern.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with the times converted to UTC from US/Eastern
+    """
+
+    df = pd.read_csv(path)
+    date = _extract_date(osp.basename(path))
+
+    df['Time'] = pd.to_datetime(date) + pd.to_timedelta(df['Time'], 'h')
+    df = df.set_index('Time')
+    df = df.tz_localize(tz)
+    df = df.tz_convert('UTC')
+    return df
+
+
+def _extract_date(filename):
+    """Parse date from filenames
+
+    Given a filename matching pattern
+
+        '*_MMDDYY_*.*',
+
+    returns the string 'MMDDYY'.
+
+    """
+    s = osp.splitext(filename)[0]
+    return s.split('_')[1]
+

@@ -1,0 +1,10 @@
+channels:
+    - default
+    - conda-forge
+dependencies:
+    - numpy
+    - xarray
+    - pandas
+    - scipy
+    - pysolar
+    - jupyter

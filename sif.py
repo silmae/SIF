@@ -161,3 +161,67 @@ def sun_positions(location_info, utc_times):
     return np.array(
         [get_position(**location_info, when=t) for t in utc_times]
         )
+
+
+def pos_to_vec(pos):
+    """Compute a direction vector given the sun position in degrees.
+    
+    Input should be azimuth (degrees clockwise from North) and altitude
+    (degrees above horizon).
+
+    The resulting vectors will be [X, Y, Z], with
+        X increasing East,
+        Y increasing North,
+    and Z increasing up (from the horizon level).
+
+    Parameters
+    ----------
+    pos : array-like
+        N x 2 array of pairs of azimuth, altitude values in degrees.
+    
+    Returns
+    -------
+    numpy.ndarray
+        N x 3 array of unit vectors pointing towards the sun.
+
+    """
+    rad = np.deg2rad(pos)
+    res = np.stack([
+        np.sin(rad[:, 0]),
+        np.cos(rad[:, 0]),
+        np.sin(rad[:, 1])
+        ], axis=0)
+    return (res / np.linalg.norm(res, 2, axis=0)).T
+
+
+def plot_sun(posvecs):
+    """Plot a 3D quiver plot of the sun position.
+    
+    Parameters
+    ----------
+    posvecs : array-like
+        Sun position vectors as given by pos_to_vec
+    
+    Returns
+    -------
+    fig, ax
+        Figure and axis handles to the created plot
+    """
+
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+
+    X, Y, Z = zip(*np.zeros_like(posvecs))
+    U, V, W = zip(*posvecs)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.quiver3D(X, Y, Z, U, V, W)
+    ax.set_xlim([-1, 1])
+    ax.set_ylim([-1, 1])
+    ax.set_zlim([-1, 1])
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    plt.show()
+    return fig, ax

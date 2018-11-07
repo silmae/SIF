@@ -15,7 +15,35 @@ from Google Earth.
 """
 
 
-def SIF_O2A(*, L_757, L_760, E_757, E_760):
+def SIF_O2A(df):
+    """Compute SIF in the O2-A absorption band.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Dataframe with radiances in columns L_757 and L_760
+        and corresponding irradiances in E_757 and E_760.
+    """
+
+    cols = ['L_757', 'L_760', 'E_757', 'E_760']
+    return _SIF_O2A(**df[cols])
+
+
+def SIF_O2B(df):
+    """Compute SIF in the O2-B absorption band.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Dataframe with radiances in columns L_685 and L_687
+        and corresponding irradiances in E_685 and E_687.
+    
+    """
+    cols = ['L_685', 'L_687', 'E_685', 'E_687']
+    return _SIF_O2B(**df[cols])
+
+
+def _SIF_O2A(*, L_757, L_760, E_757, E_760):
     """Compute SIF in the O2-A absorption band.
     
     Parameters
@@ -37,7 +65,7 @@ def SIF_O2A(*, L_757, L_760, E_757, E_760):
         )
 
 
-def SIF_O2B(*, L_685, L_687, E_685, E_687):
+def _SIF_O2B(*, L_685, L_687, E_685, E_687):
     """Compute SIF in the O2-B absorption band.
     
     Parameters
@@ -116,9 +144,9 @@ def cosine_vec(n, sun):
     result : array-like
         N x M Array of cosines between the given vectors
     """
-    return np.dot(n, sun.T) / (
+    return (np.dot(n, sun.T) / (
         np.linalg.norm(n, 2, axis=1) * np.linalg.norm(sun, 2, axis=1)
-        )
+        )).T
 
 
 def read_SIF_data(path, tz='US/Eastern'):
@@ -250,3 +278,22 @@ def plot_sun(posvecs):
     ax.set_zlabel('Z')
     plt.show()
     return fig, ax
+
+
+def apply_cosine(df, location, leaf):
+    df = df.copy()
+    df['cosine'] = cosine(leaf, sun_positions(location, df.index))
+    irs = [c for c in df.columns if 'L_' in c]
+
+    for c in irs:
+        tmp = df['cosine'] * df[c]
+        df[c] = tmp
+
+    return df
+
+
+def compute_SIFs(df):
+    df = df.copy()
+    df['SIF_O2A'] = SIF_O2A(df)
+    df['SIF_O2B'] = SIF_O2B(df)
+    return df

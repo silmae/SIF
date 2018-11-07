@@ -49,13 +49,13 @@ def _SIF_O2A(*, L_757, L_760, E_757, E_760):
     Parameters
     ----------
     L_757 : array-like
-        Radiances at 685nm
+        Radiances at 757nm
     L_760 : array-like
-        Radiances at 687nm
+        Radiances at 760nm
     E_757 : array-like
-        Solar irradiances at 685nm
+        Solar irradiances at 757nm
     E_760 : array-like
-        Solar irradiances at 687nm
+        Solar irradiances at 760nm
     """
     return FLD(
         L_in=L_760,

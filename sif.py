@@ -79,7 +79,30 @@ def FLD(*, L_in, L_out, E_in, E_out):
 
 
 def cosine(n, sun):
-    """Calculate the cosine correction given a normal and sun direction.
+    """Calculate the cosine correction given the surface and sun angles.
+
+    Parameters
+    ----------
+    n : array-like
+        N x 2 array of surface azimuths and altitudes.
+    sun : array-like
+        M x 2 array of sun azimuths and altitudes.
+    
+    Returns
+    -------
+    result : array-like
+        N x M Array of cosines between the given vectors
+    """
+
+    nv = pos_to_vec(n)
+    sunv = pos_to_vec(sun)
+
+    return cosine_vec(nv, sunv)
+
+
+def cosine_vec(n, sun):
+    """Calculate the cosine correction given a normal and sun direction
+    as vectors.
 
     Parameters
     ----------
@@ -93,7 +116,9 @@ def cosine(n, sun):
     result : array-like
         N x M Array of cosines between the given vectors
     """
-    return np.dot(n, sun.T) / (np.sum(n, axis=1) * np.sum(sun, axis=1))
+    return np.dot(n, sun.T) / (
+        np.linalg.norm(n, 2, axis=1) * np.linalg.norm(sun, 2, axis=1)
+        )
 
 
 def read_SIF_data(path, tz='US/Eastern'):

@@ -280,10 +280,19 @@ def plot_sun(posvecs):
     return fig, ax
 
 
-def apply_cosine(df, location, leaf):
+def compute_sun_pos(df, location):
     df = df.copy()
-    df['cosine'] = cosine(leaf, sun_positions(location, df.index))
-    irs = [c for c in df.columns if 'L_' in c]
+    sps = sun_positions(location, df.index)
+    df['sun_azimuth'] = sps[:, 0]
+    df['sun_altitude'] = sps[:, 1]
+    return df
+
+
+def apply_cosine(df, leaf):
+    df = df.copy()
+    sps = np.array(df[['sun_azimuth', 'sun_altitude']])
+    df['cosine'] = cosine(leaf, sps)
+    irs = [c for c in df.columns if 'E_' in c]
 
     for c in irs:
         tmp = df['cosine'] * df[c]

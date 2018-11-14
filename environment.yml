@@ -9,3 +9,4 @@ dependencies:
     - pysolar
     - matplotlib
     - jupyter
+    - holoviews
